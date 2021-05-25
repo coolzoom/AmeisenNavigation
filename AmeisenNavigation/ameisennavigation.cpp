@@ -330,7 +330,7 @@ dtPolyRef AmeisenNavigation::GetNearestPolyByHeight(const int mapId, const Vecto
     Vector3 positionRd = Vector3(position);
     WowToRDCoords(positionRd);
 
-    float extents[3] = { 1.0f, 1000.0f, 1.0f };
+    float extents[3] = { 5.0f, 10000.0f, 5.0f };
 
     dtPolyRef polyRef;
     mNavMeshQueryMap[mapId]->findNearestPoly(reinterpret_cast<const float*>(&positionRd), extents, &mQueryFilter, &polyRef, reinterpret_cast<float*>(closestPointOnPoly));

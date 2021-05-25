@@ -28,8 +28,14 @@ int main()
     // to -5866.6733, -418.58298 grid 0 [43,32]
     std::cout << std::endl << ">> ---- Testing GetNearestPolyByHeight:" << std::endl;
     int DunMoroghMapID = 0; //continet
-    Vector3 location1(-5609, -479, 0); // 394
-    Vector3 location2(-5782, -394, 0); // 363
+    //Vector3 location1(-5609, -479, 0); // 394
+    //Vector3 location2(-5782, -394, 0); // 363
+
+
+    //-5406.427, Y: -866.28174, Z : 0 to X : -5471.7324, Y : -921.44165, Z : 0
+    Vector3 location1(-5406.427f, -866.28174f, 0); // 394
+    Vector3 location2(-5471.7324f, -921.44165f, 0); // 363
+
 
     Vector3 nlocation1;
     dtPolyRef polyRefnlocation1 = ameisenNavigation.GetNearestPolyByHeight(DunMoroghMapID, location1, &nlocation1);
