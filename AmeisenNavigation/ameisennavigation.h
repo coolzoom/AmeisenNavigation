@@ -92,6 +92,8 @@ public:
     bool GetRandomPoint(const int mapId, Vector3* position);
     bool GetRandomPointAround(const int mapId, const Vector3& startPosition, float radius, Vector3* position);
 
+    dtPolyRef GetNearestPolyByHeight(const int mapId, const Vector3& position, Vector3* closestPointOnPoly);
+
     inline Vector3 RDToWowCoords(Vector3& pos)
     {
         float oz = pos.z;

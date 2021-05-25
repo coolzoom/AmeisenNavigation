@@ -4,6 +4,7 @@
     {
         KeepAlive,
         Path,
-        RandomPoint
+        RandomPoint,
+        PathRequestWithLocation
     }
 }

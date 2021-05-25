@@ -2,8 +2,8 @@
 
 int main()
 {
-    int mapId = 489; // warsong gulch
-    std::string mmapsFolder = "H:\\WoW Stuff\\mmaps\\";
+    int mapId = 489; // warsong gulch // 38 loch modan
+    std::string mmapsFolder = "C:\\Game\\World of Warcraft 3.3.5a (no install)\\mmaps\\";
 
     Vector3 startPositionCastMovementRay(916, 1434, 346);
     Vector3 endPositionCastMovementRay(1539, 1481, 352);
@@ -22,6 +22,40 @@ int main()
     AmeisenNavigation ameisenNavigation = AmeisenNavigation(mmapsFolder, 256, 32);
 
     TestLoadMmaps(mapId, ameisenNavigation);
+
+    // Creating Path from Azeroth: [-5609,-479,394] tot Azeroth: [-5782,-394,363]
+    // from -5609.7637, -479.22607 grid 0 [42,32]
+    // to -5866.6733, -418.58298 grid 0 [43,32]
+    std::cout << std::endl << ">> ---- Testing GetNearestPolyByHeight:" << std::endl;
+    int DunMoroghMapID = 0; //continet
+    Vector3 location1(-5609, -479, 0); // 394
+    Vector3 location2(-5782, -394, 0); // 363
+
+    Vector3 nlocation1;
+    dtPolyRef polyRefnlocation1 = ameisenNavigation.GetNearestPolyByHeight(DunMoroghMapID, location1, &nlocation1);
+    if(polyRefnlocation1 != 0)
+    {
+        std::cout << " GetNearestPolyByHeight Found " << location1 << " -> " << nlocation1 << std::endl;
+    }
+    else
+    {
+        std::cout << " GetNearestPolyByHeight Failed " << location1 << std::endl;
+    }
+
+    Vector3 nlocation2;
+    dtPolyRef polyRefnlocation2 = ameisenNavigation.GetNearestPolyByHeight(DunMoroghMapID, location2, &nlocation2);
+    if (polyRefnlocation2 != 0)
+    {
+        std::cout << " GetNearestPolyByHeight Found " << location2 << " -> " << nlocation2 << std::endl;
+    }
+    else
+    {
+        std::cout << " GetNearestPolyByHeight Failed " << location2 << std::endl;
+    }
+
+    std::cout << std::endl << ">> ---- Testing GetPath:" << std::endl;
+    TestGetPath(DunMoroghMapID, ameisenNavigation, nlocation1, nlocation2);
+
 
     //std::cout << std::endl << ">> ---- Testing CastMovementRay:" << std::endl;
     //TestCastMovementRay(mapId, ameisenNavigation, startPositionCastMovementRay, Vector3(918, 1434, 346));
@@ -74,7 +108,8 @@ void TestGetPath(const int mapId, AmeisenNavigation& ameisenNavigation, const Ve
         // print the nodes
         for (int i = 0; i < pathSize; ++i)
         {
-            std::cout << std::fixed << std::setprecision(2) << ">> Node [" << i << "]: " << path[i] << std::endl;
+            //std::cout << std::fixed << std::setprecision(2) << ">> Node [" << i << "]: " << path[i] << std::endl;
+            std::cout << std::fixed << std::setprecision(2) << "new float[] {" << path[i].x << "f," << path[i].y << "f," << path[i].z << "f}," << std::endl;
         }
     }
     else

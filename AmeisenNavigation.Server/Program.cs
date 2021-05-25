@@ -169,6 +169,12 @@ namespace AmeisenNavigation.Server
 
                         if (dataSize > 0)
                         {
+                            if (dataSize >= 1414745936)
+                            {
+                                LogQueue.Enqueue(new LogEntry("Received size ", ConsoleColor.Red, $"{dataSize}", LogLevel.ERROR));
+                                return;
+                            }
+
                             byte[] bytes = binaryReader.ReadBytes(dataSize);
 
                             int msgType = BitConverter.ToInt32(bytes, 0);
@@ -201,6 +207,22 @@ namespace AmeisenNavigation.Server
 
                                             sw.Stop();
                                             LogQueue.Enqueue(new LogEntry("[RANDOMPOINT] ", ConsoleColor.Green, $"took {sw.ElapsedMilliseconds}ms ({sw.ElapsedTicks} ticks)", LogLevel.INFO));
+                                        }
+                                        else
+                                        {
+                                            LogQueue.Enqueue(new LogEntry("Received malformed RandomPointRequest...", ConsoleColor.Red, $"{client.Client.RemoteEndPoint}", LogLevel.ERROR));
+                                        }
+                                        break;
+
+                                    case MsgType.PathRequestWithLocation:
+                                        if(bytes.Length == sizeof(PathRequestWithLocationRequest))
+                                        {
+                                            Stopwatch sw = Stopwatch.StartNew();
+
+                                            TcpHandlePathRequestWithLocationRequest(binaryWriter, bytes);
+
+                                            sw.Stop();
+                                            LogQueue.Enqueue(new LogEntry("[PathRequestWithLocationRequest] ", ConsoleColor.Green, $"took {sw.ElapsedMilliseconds}ms ({sw.ElapsedTicks} ticks)", LogLevel.INFO));
                                         }
                                         else
                                         {
@@ -464,6 +486,86 @@ namespace AmeisenNavigation.Server
                 }
             }
         }
+
+        private unsafe static void TcpHandlePathRequestWithLocationRequest(BinaryWriter writer, byte[] bytes)
+        {
+            PathRequestWithLocationRequest request = Utils.FromBytes<PathRequestWithLocationRequest>(bytes);
+
+            lock (querylock)
+            {
+                if (!AmeisenNav.IsMapLoaded(request.MapId))
+                {
+                    LogQueue.Enqueue(new LogEntry("[MMAPS] ", ConsoleColor.Green, $"Loading Map: {request.MapId}", LogLevel.INFO));
+                    AmeisenNav.LoadMap(request.MapId);
+                }
+            }
+
+            int pathSize = 0;
+            float[] movePath = null;
+
+            fixed (float* pStartPosition = request.A.ToArray())
+            fixed (float* pEndPosition = request.B.ToArray())
+            {
+                float[] startPos;
+                float[] endPos;
+
+                try 
+                {
+                    startPos = AmeisenNav.GetPosition(request.MapId, pStartPosition);
+                    endPos = AmeisenNav.GetPosition(request.MapId, pEndPosition);
+
+                    //LogQueue.Enqueue(new LogEntry("PATHWLOC", ConsoleColor.DarkBlue, string.Join(",",startPos), LogLevel.INFO));
+                    //LogQueue.Enqueue(new LogEntry("PATHWLOC", ConsoleColor.Blue, string.Join(",", endPos), LogLevel.INFO));
+                }
+                catch(Exception ex)
+                {
+                    LogQueue.Enqueue(new LogEntry("PATHWLOC", ConsoleColor.Red, ex.ToString(), LogLevel.ERROR));
+                }
+
+                fixed (float* ppStartPosition = startPos)
+                fixed (float* ppEndPosition = endPos)
+                {
+                    try
+                    {
+                        lock (querylock)
+                        {
+                            movePath = AmeisenNav.GetPath(request.MapId, ppStartPosition, ppEndPosition, &pathSize);
+                        }
+                    }
+                    catch { }
+
+                    if (movePath != null && movePath.Length != 0)
+                    {
+                        //for(int i = 0; i< movePath.Length; i += 3)
+                        //{
+                        //    LogQueue.Enqueue(new LogEntry("PATHWLOC ", ConsoleColor.Red, string.Join(",", movePath[i], movePath[i+1], movePath[i + 2]), LogLevel.INFO));
+                        //}
+
+                        // we can't apply the chaikin-curve on a path that has just a single node
+                        if (request.Flags.HasFlag(PathRequestFlags.ChaikinCurve)
+                            && pathSize > 1)
+                        {
+                            movePath = ChaikinCurve.Perform(movePath, Settings.ChaikinIterations);
+                        }
+
+                        // we can't apply the catmull-rom-spline on a path with less than 4 nodes
+                        if (request.Flags.HasFlag(PathRequestFlags.CatmullRomSpline)
+                            && pathSize >= 4)
+                        {
+                            movePath = CatmullRomSpline.Perform(movePath, Settings.CatmullRomSplinePoints);
+                        }
+
+                        pathSize = movePath.Length / 3;
+
+                        fixed (float* pPath = movePath)
+                        {
+                            TcpSendData(writer, pPath, sizeof(Vector3) * pathSize);
+                        }
+                    }
+                }
+            }
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private unsafe static void TcpSendData<T>(BinaryWriter writer, T* data, int size) where T : unmanaged

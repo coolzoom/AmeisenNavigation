@@ -319,3 +319,23 @@ bool AmeisenNavigation::LoadMmapsForContinent(const int mapId)
 
     return true;
 }
+
+dtPolyRef AmeisenNavigation::GetNearestPolyByHeight(const int mapId, const Vector3& position, Vector3* closestPointOnPoly)
+{
+    if (!PreparePathfinding(mapId))
+    {
+        return false;
+    }
+
+    Vector3 positionRd = Vector3(position);
+    WowToRDCoords(positionRd);
+
+    float extents[3] = { 1.0f, 1000.0f, 1.0f };
+
+    dtPolyRef polyRef;
+    mNavMeshQueryMap[mapId]->findNearestPoly(reinterpret_cast<const float*>(&positionRd), extents, &mQueryFilter, &polyRef, reinterpret_cast<float*>(closestPointOnPoly));
+
+    RDToWowCoords(*closestPointOnPoly);
+
+    return polyRef;
+}

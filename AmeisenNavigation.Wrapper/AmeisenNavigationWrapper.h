@@ -104,5 +104,14 @@ namespace AmeisenNavigationWrapper
             delete[] path;
             return tempPath;
         }
+
+        array<float>^ GetPosition(int mapId, float pos[])
+        {
+            array<float>^ position = gcnew array<float>(3);
+            pin_ptr<float> pPosition = &position[0];
+
+            pAmeisenNav->GetNearestPolyByHeight(mapId, pos, (Vector3*)pPosition);
+            return position;
+        }
     };
 }
