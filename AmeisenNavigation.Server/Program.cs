@@ -519,7 +519,7 @@ namespace AmeisenNavigation.Server
                 }
                 catch(Exception ex)
                 {
-                    LogQueue.Enqueue(new LogEntry("PATHWLOC", ConsoleColor.Red, ex.ToString(), LogLevel.ERROR));
+                    LogQueue.Enqueue(new LogEntry("PATHWLOC-GetPosition", ConsoleColor.Red, ex.ToString(), LogLevel.ERROR));
                 }
 
                 fixed (float* ppStartPosition = startPos)
@@ -532,7 +532,10 @@ namespace AmeisenNavigation.Server
                             movePath = AmeisenNav.GetPath(request.MapId, ppStartPosition, ppEndPosition, &pathSize);
                         }
                     }
-                    catch { }
+                    catch(Exception ex) 
+                    {
+                        LogQueue.Enqueue(new LogEntry("PATHWLOC-GetPath", ConsoleColor.Red, ex.ToString(), LogLevel.ERROR));
+                    }
 
                     if (movePath != null && movePath.Length != 0)
                     {
