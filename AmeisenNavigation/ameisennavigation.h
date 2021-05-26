@@ -84,6 +84,7 @@ public:
 
     bool LoadMmapsForContinent(const int mapId);
     bool IsMmapLoaded(const int mapId);
+    bool UnloadContinent(const int mapId);
 
     dtPolyRef GetNearestPoly(const int mapId, const Vector3& position, Vector3* closestPointOnPoly);
     bool GetPath(int mapId, const Vector3& startPosition, const Vector3& endPosition, Vector3* path, int* pathSize);

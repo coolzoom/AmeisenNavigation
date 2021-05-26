@@ -48,6 +48,11 @@ namespace AmeisenNavigationWrapper
             return pAmeisenNav->IsMmapLoaded(mapId);
         }
 
+        bool UnloadMap(int mapId)
+        {
+            return pAmeisenNav->UnloadContinent(mapId);
+        }
+
         bool CastMovementRay(int mapId, float start[], float end[])
         {
             return pAmeisenNav->CastMovementRay(mapId, start, end);

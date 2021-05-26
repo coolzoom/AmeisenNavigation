@@ -13,6 +13,17 @@ bool AmeisenNavigation::IsMmapLoaded(const int map_id)
         && mNavMeshQueryMap[map_id] != nullptr;
 }
 
+bool AmeisenNavigation::UnloadContinent(const int mapId)
+{
+    if (IsMmapLoaded(mapId))
+    {
+        dtFreeNavMeshQuery(mNavMeshQueryMap[mapId]);
+        dtFreeNavMesh(mNavMeshMap[mapId]);
+        return true;
+    }
+    return false;
+}
+
 bool AmeisenNavigation::GetPath(const int mapId, const Vector3& startPosition, const Vector3& endPosition, Vector3* path, int* pathSize)
 {
     D(std::cout << ">> GetPath (" << mapId << ") " << startPosition << " -> " << endPosition << std::endl);
