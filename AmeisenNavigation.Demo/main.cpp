@@ -27,18 +27,23 @@ int main()
     // from -5609.7637, -479.22607 grid 0 [42,32]
     // to -5866.6733, -418.58298 grid 0 [43,32]
     std::cout << std::endl << ">> ---- Testing GetNearestPolyByHeight:" << std::endl;
-    int DunMoroghMapID = 0; //continet
+    int targetMapID = 530; // continet  0 - EK | 1 - Kalimdor | 530 - outland
     //Vector3 location1(-5609, -479, 0); // 394
     //Vector3 location2(-5782, -394, 0); // 363
 
 
     //-5406.427, Y: -866.28174, Z : 0 to X : -5471.7324, Y : -921.44165, Z : 0
-    Vector3 location1(-5406.427f, -866.28174f, 0); // 394
-    Vector3 location2(-5471.7324f, -921.44165f, 0); // 363
+    //Vector3 location1(-5406.427f, -866.28174f, 0); // 394
+    //Vector3 location2(-5471.7324f, -921.44165f, 0); // 363
+
+    //49.483,48.825 map 1943 to 53,23.442 map 1943...
+    //X : -4119.145, Y : -12514.37, Z : 0 to X : -3430.1025, Y : -12657.541, Z : 0...
+    Vector3 location1(-4119.145, -12514.37, 0); // 394
+    Vector3 location2(-3430.1025, -12657.541, 0); // 363
 
 
     Vector3 nlocation1;
-    dtPolyRef polyRefnlocation1 = ameisenNavigation.GetNearestPolyByHeight(DunMoroghMapID, location1, &nlocation1);
+    dtPolyRef polyRefnlocation1 = ameisenNavigation.GetNearestPolyByHeight(targetMapID, location1, &nlocation1);
     if(polyRefnlocation1 != 0)
     {
         std::cout << " GetNearestPolyByHeight Found " << location1 << " -> " << nlocation1 << std::endl;
@@ -49,7 +54,7 @@ int main()
     }
 
     Vector3 nlocation2;
-    dtPolyRef polyRefnlocation2 = ameisenNavigation.GetNearestPolyByHeight(DunMoroghMapID, location2, &nlocation2);
+    dtPolyRef polyRefnlocation2 = ameisenNavigation.GetNearestPolyByHeight(targetMapID, location2, &nlocation2);
     if (polyRefnlocation2 != 0)
     {
         std::cout << " GetNearestPolyByHeight Found " << location2 << " -> " << nlocation2 << std::endl;
@@ -60,7 +65,7 @@ int main()
     }
 
     std::cout << std::endl << ">> ---- Testing GetPath:" << std::endl;
-    TestGetPath(DunMoroghMapID, ameisenNavigation, nlocation1, nlocation2);
+    TestGetPath(targetMapID, ameisenNavigation, nlocation1, nlocation2);
 
 
     //std::cout << std::endl << ">> ---- Testing CastMovementRay:" << std::endl;
