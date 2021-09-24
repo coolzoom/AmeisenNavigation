@@ -96,6 +96,7 @@ int main(int argc, const char* argv[])
     Server->AddCallback(static_cast<char>(MessageType::RANDOM_POINT_AROUND), RandomPointAroundCallback);
     Server->AddCallback(static_cast<char>(MessageType::MOVE_ALONG_SURFACE), MoveAlongSurfaceCallback);
     Server->AddCallback(static_cast<char>(MessageType::CAST_RAY), CastRayCallback);
+    Server->AddCallback(static_cast<char>(MessageType::PATH_LOCATIONS), PathLocationsCallback);
 
     LogS("Starting server on: ", Config->ip, ":", std::to_string(Config->port));
     Server->Run();
@@ -196,6 +197,26 @@ void CastRayCallback(ClientHandler* handler, char type, const void* data, int si
     if (Nav->CastMovementRay(handler->GetId(), request.mapId, request.start, request.end, &hit))
     {
         handler->SendData(type, request.end, VEC3_SIZE);
+    }
+    else
+    {
+        float zero[3]{};
+        handler->SendData(type, zero, VEC3_SIZE);
+    }
+}
+
+void PathLocationsCallback(ClientHandler* handler, char type, const void* data, int size) noexcept
+{
+    const PathRequestData request = *reinterpret_cast<const PathRequestData*>(data);
+
+    int pathSize = 0;
+    float* pathBuffer = ClientPathBuffers[handler->GetId()].first;
+
+    bool pathGenerated = Nav->CalculateLocationGuessPath(handler->GetId(), request.mapId, request.start, request.end, pathBuffer, &pathSize);
+
+    if (pathGenerated)
+    {
+        handler->SendData(type, pathBuffer, pathSize * sizeof(float));
     }
     else
     {

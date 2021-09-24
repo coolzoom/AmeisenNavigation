@@ -481,3 +481,63 @@ bool AmeisenNavigation::CalculateNormalPath(int clientId, int mapId, const float
 
     return false;
 }
+
+bool AmeisenNavigation::CalculateLocationGuessPath(int clientId, int mapId, const float* startPosition, const float* endPosition, float* path, int* pathSize, dtPolyRef* visited) noexcept
+{
+    if (!IsValidClient(clientId) || !InitQueryAndLoadMmaps(clientId, mapId)) { return false; }
+
+    float rdStart[3];
+    dtVcopy(rdStart, startPosition);
+    WowToRDCoords(rdStart);
+
+    float rdEnd[3];
+    dtVcopy(rdEnd, endPosition);
+    WowToRDCoords(rdEnd);
+
+    dtStatus polyPathStatus = Clients[clientId]->GetNavmeshQuery(mapId)->findPath
+    (
+        GetNearestPolyByHeight(clientId, mapId, rdStart, rdStart),
+        GetNearestPolyByHeight(clientId, mapId, rdEnd, rdEnd),
+        rdStart,
+        rdEnd,
+        &QueryFilter,
+        Clients[clientId]->GetPolyPathBuffer(),
+        pathSize,
+        MaxPathNodes
+    );
+
+    if (dtStatusSucceed(polyPathStatus))
+    {
+        ANAV_DEBUG_ONLY(std::cout << ">> [" << clientId << "] findPath: " << *pathSize << "/" << MaxPathNodes << std::endl);
+
+        dtStatus straightPathStatus = Clients[clientId]->GetNavmeshQuery(mapId)->findStraightPath
+        (
+            rdStart,
+            rdEnd,
+            Clients[clientId]->GetPolyPathBuffer(),
+            *pathSize,
+            path,
+            nullptr,
+            visited,
+            pathSize,
+            MaxPathNodes * 3
+        );
+
+        if (dtStatusSucceed(straightPathStatus))
+        {
+            ANAV_DEBUG_ONLY(std::cout << ">> [" << clientId << "] findStraightPath: " << (*pathSize) << "/" << MaxPathNodes << std::endl);
+            (*pathSize) *= 3;
+            return true;
+        }
+        else
+        {
+            ANAV_ERROR_MSG(std::cout << ">> [" << clientId << "] Failed to call findStraightPath: " << straightPathStatus << std::endl);
+        }
+    }
+    else
+    {
+        ANAV_ERROR_MSG(std::cout << ">> [" << clientId << "] Failed to call findPath: " << polyPathStatus << std::endl);
+    }
+
+    return false;
+}

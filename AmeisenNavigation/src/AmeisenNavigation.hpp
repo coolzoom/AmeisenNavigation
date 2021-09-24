@@ -222,6 +222,11 @@ public:
     /// <returns>True if loaded, false if something went wrong.</returns>
     bool LoadMmaps(int mapId) noexcept;
 
+    /// <summary>
+    /// Used by the GetPath and GetRandomPath methods to generate a path.
+    /// </summary>
+    bool CalculateLocationGuessPath(int clientId, int mapId, const float* startPosition, const float* endPosition, float* path, int* pathSize, dtPolyRef* visited = nullptr) noexcept;
+
 private:
     /// <summary>
     /// Try to find the nearest poly for a given position.
@@ -235,6 +240,22 @@ private:
     {
         dtPolyRef polyRef;
         float extents[3] = { 6.0f, 6.0f, 6.0f };
+        bool result = dtStatusSucceed(Clients.at(clientId)->GetNavmeshQuery(mapId)->findNearestPoly(position, extents, &QueryFilter, &polyRef, closestPointOnPoly));
+        return result ? polyRef : 0;
+    }
+
+    /// <summary>
+    /// Try to find the nearest poly for a given position.
+    /// </summary>
+    /// <param name="clientId">Id of the client to run this on.</param>
+    /// <param name="mapId">The map id to search a path on.</param>
+    /// <param name="position">Current position.</param>
+    /// <param name="closestPointOnPoly">Closest point on the found poly.</param>
+    /// <returns>Reference to the found poly if found, else 0.</returns>
+    inline dtPolyRef GetNearestPolyByHeight(int clientId, int mapId, float* position, float* closestPointOnPoly) const noexcept
+    {
+        dtPolyRef polyRef;
+        float extents[3] = { 6.0f, 10000.0f, 6.0f };
         bool result = dtStatusSucceed(Clients.at(clientId)->GetNavmeshQuery(mapId)->findNearestPoly(position, extents, &QueryFilter, &polyRef, closestPointOnPoly));
         return result ? polyRef : 0;
     }
