@@ -71,6 +71,9 @@ private:
     std::unordered_map<int, std::pair<std::mutex, dtNavMesh*>> NavMeshMap;
     std::unordered_map<int, AmeisenNavClient*> Clients;
 
+    float smallExtents[3] = { 6.0f, 6.0f, 6.0f };
+    float heightExtents[3] = { 6.0f, 10000.0f, 6.0f };
+
 public:
     /// <summary>
     /// Create a new instance of the AmeisenNavigation class to handle pathfinding.
@@ -225,7 +228,7 @@ public:
     /// <summary>
     /// Used by the GetPath and GetRandomPath methods to generate a path.
     /// </summary>
-    bool CalculateLocationGuessPath(int clientId, int mapId, const float* startPosition, const float* endPosition, float* path, int* pathSize, dtPolyRef* visited = nullptr) noexcept;
+    bool FindLocationInExtent(int clientId, int mapId, float* position) noexcept;
 
 private:
     /// <summary>
@@ -235,27 +238,11 @@ private:
     /// <param name="mapId">The map id to search a path on.</param>
     /// <param name="position">Current position.</param>
     /// <param name="closestPointOnPoly">Closest point on the found poly.</param>
+    /// <param name="extents">Bounding box of the search area</param>
     /// <returns>Reference to the found poly if found, else 0.</returns>
-    inline dtPolyRef GetNearestPoly(int clientId, int mapId, float* position, float* closestPointOnPoly) const noexcept
+    inline dtPolyRef GetNearestPoly(int clientId, int mapId, float* position, float* closestPointOnPoly, float* extents) const noexcept
     {
         dtPolyRef polyRef;
-        float extents[3] = { 6.0f, 6.0f, 6.0f };
-        bool result = dtStatusSucceed(Clients.at(clientId)->GetNavmeshQuery(mapId)->findNearestPoly(position, extents, &QueryFilter, &polyRef, closestPointOnPoly));
-        return result ? polyRef : 0;
-    }
-
-    /// <summary>
-    /// Try to find the nearest poly for a given position.
-    /// </summary>
-    /// <param name="clientId">Id of the client to run this on.</param>
-    /// <param name="mapId">The map id to search a path on.</param>
-    /// <param name="position">Current position.</param>
-    /// <param name="closestPointOnPoly">Closest point on the found poly.</param>
-    /// <returns>Reference to the found poly if found, else 0.</returns>
-    inline dtPolyRef GetNearestPolyByHeight(int clientId, int mapId, float* position, float* closestPointOnPoly) const noexcept
-    {
-        dtPolyRef polyRef;
-        float extents[3] = { 6.0f, 10000.0f, 6.0f };
         bool result = dtStatusSucceed(Clients.at(clientId)->GetNavmeshQuery(mapId)->findNearestPoly(position, extents, &QueryFilter, &polyRef, closestPointOnPoly));
         return result ? polyRef : 0;
     }

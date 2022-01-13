@@ -11,7 +11,7 @@
 #include <iostream>
 #include <mutex>
 
-constexpr auto AMEISENNAV_VERSION = "1.7.5.1";
+constexpr auto AMEISENNAV_VERSION = "1.7.5.2";
 
 constexpr auto VEC3_SIZE = sizeof(float) * 3;
 
@@ -22,8 +22,7 @@ enum class MessageType
     RANDOM_POINT,
     RANDOM_POINT_AROUND,
     CAST_RAY,
-    RANDOM_PATH,
-    PATH_LOCATIONS
+    RANDOM_PATH
 };
 
 enum class PathType
@@ -37,6 +36,7 @@ enum class PathRequestFlags : int
     NONE = 0,
     CHAIKIN = 1,
     CATMULLROM = 2,
+    FIND_LOCATION = 4,
 };
 
 struct PathRequestData
@@ -87,5 +87,3 @@ void MoveAlongSurfaceCallback(ClientHandler* handler, char type, const void* dat
 void CastRayCallback(ClientHandler* handler, char type, const void* data, int size) noexcept;
 
 void GenericPathCallback(ClientHandler* handler, char type, const void* data, int size, PathType pathType) noexcept;
-
-void PathLocationsCallback(ClientHandler* handler, char type, const void* data, int size) noexcept;

@@ -97,7 +97,7 @@ bool AmeisenNavigation::MoveAlongSurface(int clientId, int mapId, const float* s
     dtPolyRef visited[16]{};
     dtStatus moveAlongSurfaceStatus = Clients[clientId]->GetNavmeshQuery(mapId)->moveAlongSurface
     (
-        GetNearestPoly(clientId, mapId, rdStart, rdStart),
+        GetNearestPoly(clientId, mapId, rdStart, rdStart, smallExtents),
         rdStart,
         rdEnd,
         &QueryFilter,
@@ -157,7 +157,7 @@ bool AmeisenNavigation::GetRandomPointAround(int clientId, int mapId, const floa
     dtPolyRef polyRef;
     dtStatus findRandomPointAroundStatus = Clients[clientId]->GetNavmeshQuery(mapId)->findRandomPointAroundCircle
     (
-        GetNearestPoly(clientId, mapId, rdStart, rdStart),
+        GetNearestPoly(clientId, mapId, rdStart, rdStart, smallExtents),
         rdStart,
         radius,
         &QueryFilter,
@@ -193,7 +193,7 @@ bool AmeisenNavigation::CastMovementRay(int clientId, int mapId, const float* st
 
     dtStatus castMovementRayStatus = Clients[clientId]->GetNavmeshQuery(mapId)->raycast
     (
-        GetNearestPoly(clientId, mapId, rdStart, rdStart),
+        GetNearestPoly(clientId, mapId, rdStart, rdStart, smallExtents),
         rdStart,
         rdEnd,
         &QueryFilter,
@@ -436,8 +436,8 @@ bool AmeisenNavigation::CalculateNormalPath(int clientId, int mapId, const float
 
     dtStatus polyPathStatus = Clients[clientId]->GetNavmeshQuery(mapId)->findPath
     (
-        GetNearestPoly(clientId, mapId, rdStart, rdStart),
-        GetNearestPoly(clientId, mapId, rdEnd, rdEnd),
+        GetNearestPoly(clientId, mapId, rdStart, rdStart, smallExtents),
+        GetNearestPoly(clientId, mapId, rdEnd, rdEnd, smallExtents),
         rdStart,
         rdEnd,
         &QueryFilter,
@@ -482,61 +482,19 @@ bool AmeisenNavigation::CalculateNormalPath(int clientId, int mapId, const float
     return false;
 }
 
-bool AmeisenNavigation::CalculateLocationGuessPath(int clientId, int mapId, const float* startPosition, const float* endPosition, float* path, int* pathSize, dtPolyRef* visited) noexcept
+bool AmeisenNavigation::FindLocationInExtent(int clientId, int mapId, float* position) noexcept
 {
     if (!IsValidClient(clientId) || !InitQueryAndLoadMmaps(clientId, mapId)) { return false; }
 
-    float rdStart[3];
-    dtVcopy(rdStart, startPosition);
-    WowToRDCoords(rdStart);
+    float pos[3];
+    dtVcopy(pos, position);
+    WowToRDCoords(pos);
 
-    float rdEnd[3];
-    dtVcopy(rdEnd, endPosition);
-    WowToRDCoords(rdEnd);
-
-    dtStatus polyPathStatus = Clients[clientId]->GetNavmeshQuery(mapId)->findPath
-    (
-        GetNearestPolyByHeight(clientId, mapId, rdStart, rdStart),
-        GetNearestPolyByHeight(clientId, mapId, rdEnd, rdEnd),
-        rdStart,
-        rdEnd,
-        &QueryFilter,
-        Clients[clientId]->GetPolyPathBuffer(),
-        pathSize,
-        MaxPathNodes
-    );
-
-    if (dtStatusSucceed(polyPathStatus))
+    if (GetNearestPoly(clientId, mapId, pos, pos, heightExtents) != 0)
     {
-        ANAV_DEBUG_ONLY(std::cout << ">> [" << clientId << "] findPath: " << *pathSize << "/" << MaxPathNodes << std::endl);
-
-        dtStatus straightPathStatus = Clients[clientId]->GetNavmeshQuery(mapId)->findStraightPath
-        (
-            rdStart,
-            rdEnd,
-            Clients[clientId]->GetPolyPathBuffer(),
-            *pathSize,
-            path,
-            nullptr,
-            visited,
-            pathSize,
-            MaxPathNodes * 3
-        );
-
-        if (dtStatusSucceed(straightPathStatus))
-        {
-            ANAV_DEBUG_ONLY(std::cout << ">> [" << clientId << "] findStraightPath: " << (*pathSize) << "/" << MaxPathNodes << std::endl);
-            (*pathSize) *= 3;
-            return true;
-        }
-        else
-        {
-            ANAV_ERROR_MSG(std::cout << ">> [" << clientId << "] Failed to call findStraightPath: " << straightPathStatus << std::endl);
-        }
-    }
-    else
-    {
-        ANAV_ERROR_MSG(std::cout << ">> [" << clientId << "] Failed to call findPath: " << polyPathStatus << std::endl);
+        RDToWowCoords(pos);
+        dtVcopy(position, pos);
+        return true;
     }
 
     return false;
