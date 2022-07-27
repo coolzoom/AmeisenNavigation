@@ -74,7 +74,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>build\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>build\$(Platform)\int\$(Configuration)\</IntDir>
-    <TargetName>AmeisenNavigationServer</TargetName>
+    <TargetName>amnav</TargetName>
     <LibraryPath>$(SolutionDir)dep\AnTCP.Server\lib\$(Configuration)\x86\;$(SolutionDir)AmeisenNavigation\build\$(Platform)\$(Configuration)\;$(SolutionDir)recastnavigation\build\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir)dep\AnTCP.Server\include\;$(IncludePath)</IncludePath>
   </PropertyGroup>
