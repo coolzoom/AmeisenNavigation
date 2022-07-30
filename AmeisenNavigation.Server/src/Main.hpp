@@ -44,7 +44,7 @@ struct PathRequestData
     int flags;
     float start[3];
     int startBuffer; //not sure why it has extra byte, maybe antcpclient.send issue?
-    float end[3];	    float end[3];
+    float end[3];
     int endBuffer;  //not sure why it has extra byte
 };
 
