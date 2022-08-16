@@ -18,7 +18,7 @@ struct AmeisenNavConfig
 private:
     std::map<std::string, void*> Map
     {
-        { "fCatmullRomSplineAlpha", &catmullRomSplineAlpha },
+        { "fCatmullRomSplineAlpha", &catmullRomSplineAlpha },//https://en.wikipedia.org/wiki/Centripetal_Catmull%E2%80%93Rom_spline :param alpha: 0.5 for the centripetal spline, 0.0 for the uniform spline, 1.0 for the chordal spline.
         { "fRandomPathMaxDistance", &randomPathMaxDistance },
         { "iCatmullRomSplinePoints", &catmullRomSplinePoints },
         { "iMaxPolyPath", &maxPolyPath },

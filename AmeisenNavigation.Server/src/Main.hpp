@@ -36,6 +36,7 @@ enum class PathRequestFlags : int
     NONE = 0,
     CHAIKIN = 1,
     CATMULLROM = 2,
+    FIND_LOCATION = 4
 };
 
 struct PathRequestData
